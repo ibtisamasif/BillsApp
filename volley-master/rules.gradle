@@ -1,0 +1,30 @@
+// See build.gradle for an explanation of what this file is.
+
+apply plugin: 'com.android.library'
+
+android {
+  useLibrary 'org.apache.http.legacy'
+
+  compileOptions {
+    android.compileOptions.targetCompatibility JavaVersion.VERSION_1_8
+    android.compileOptions.sourceCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+// Check if the android plugin version supports unit testing.
+if (configurations.findByName("testImplementation")) {
+  dependencies {
+    testImplementation "junit:junit:4.10"
+    testImplementation "org.mockito:mockito-core:1.9.5"
+    testImplementation "org.robolectric:robolectric:3.0"
+  }
+}
+
+// (#4): Remove this once Javadoc errors are fixed
+if (JavaVersion.current().isJava8Compatible()) {
+  allprojects {
+    tasks.withType(Javadoc) {
+      options.addStringOption('Xdoclint:none', '-quiet')
+    }
+  }
+}

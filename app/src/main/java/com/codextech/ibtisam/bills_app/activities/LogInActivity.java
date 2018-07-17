@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -154,30 +152,41 @@ public class LogInActivity extends AppCompatActivity {
                 Log.d(TAG, "onResponse() makeLoginRequest called with: response = [" + response + "]");
 //                pdLoading.dismiss();
                 try {
+                    if (pdLoading != null && pdLoading.isShowing()) {
+                        pdLoading.dismiss();
+                    }
                     JSONObject jObj = new JSONObject(response);
+                    int responseCode = jObj.getInt("responseCode");
+                    if (responseCode == 200) {
+                        JSONObject jObjReponse = jObj.getJSONObject("response");
+                        String access_token = jObjReponse.getString("access_token");
+                        String type = jObjReponse.getString("type");
+                        Log.d(TAG, "onResponse: access_token: " + access_token);
+                        Log.d(TAG, "onResponse: type: " + type);
 
-                    String access_token = jObj.getString("access_token");
-                    String type = jObj.getString("type");
-                    Log.d(TAG, "onResponse: access_token: " + access_token);
-                    Log.d(TAG, "onResponse: type: " + type);
+                        //parsing user object
+                        JSONObject responseObject = jObjReponse.getJSONObject("user");
+                        String user_id = responseObject.getString("user_id");
+                        String user_name = responseObject.getString("user_name");
+                        String user_email = responseObject.getString("user_email");
+                        String user_scope = responseObject.getString("user_scope");
+                        String user_fcm_id = responseObject.getString("user_fcm_id");
+                        String user_image = responseObject.getString("user_image");
+                        String iat = responseObject.getString("iat");
 
-                    //parsing user object
-                    JSONObject responseObject = jObj.getJSONObject("user");
-                    String user_id = responseObject.getString("user_id");
-                    String user_name = responseObject.getString("user_name");
-                    String user_email = responseObject.getString("user_email");
-                    String user_scope = responseObject.getString("user_scope");
-                    String iat = responseObject.getString("iat");
+                        Log.d(TAG, "onResponse: user_id: " + user_id);
+                        Log.d(TAG, "onResponse: user_name: " + user_name);
+                        Log.d(TAG, "onResponse: user_email: " + user_email);
+                        Log.d(TAG, "onResponse: user_scope: " + user_scope);
+                        Log.d(TAG, "onResponse: user_fcm_id: " + user_fcm_id);
+                        Log.d(TAG, "onResponse: user_image: " + user_image);
+                        Log.d(TAG, "onResponse: iat: " + iat);
 
-                    Log.d(TAG, "onResponse: user_id: " + user_id);
-                    Log.d(TAG, "onResponse: user_name: " + user_name);
-                    Log.d(TAG, "onResponse: user_email: " + user_email);
-                    Log.d(TAG, "onResponse: user_scope: " + user_scope);
-                    Log.d(TAG, "onResponse: iat: " + iat);
+                        sessionManager.loginnUser(user_id, access_token, Calendar.getInstance().getTimeInMillis(), user_name, user_image, user_email, user_scope);
 
-                    sessionManager.loginnUser(user_id, access_token, Calendar.getInstance().getTimeInMillis(), user_name, firstname, lastname, completeImagePath, user_email, company_id, company_name, role_id, role_role);
-
-
+                        startActivity(new Intent(LogInActivity.this, MainActivity.class));
+                        finish();
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -215,7 +224,7 @@ public class LogInActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("user[user_email]", number);
+                params.put("user[user_email]", email);
                 params.put("user[user_password]", password);
                 Log.d(TAG, "Login getParams: " + params);
                 return params;

@@ -1,8 +1,12 @@
 package com.codextech.ibtisam.bills_app.activities
 
+import android.app.Activity
 import android.app.Dialog
+import android.content.BroadcastReceiver
+import android.content.Context
 
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
@@ -10,6 +14,7 @@ import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -18,15 +23,26 @@ import com.codextech.ibtisam.bills_app.R
 import com.codextech.ibtisam.bills_app.adapters.BillerRecyclerAdapter
 import com.codextech.ibtisam.bills_app.models.BPBiller
 import com.codextech.ibtisam.bills_app.models.BPMerchant
+import com.codextech.ibtisam.bills_app.service.InitService
+import com.codextech.ibtisam.bills_app.sync.DataSenderAsync
+import com.codextech.ibtisam.bills_app.sync.SyncStatus
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import java.util.ArrayList
+import java.util.*
+
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     internal lateinit var adapter: BillerRecyclerAdapter
     internal var list: List<BPBiller> = ArrayList()
     private var selectedMerchantName: String? = ""
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val bundle = intent.extras
+            handleResult(bundle)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +98,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            bpTransation.save()
 //            Toast.makeText(this, "Biller Added: " + bpTransation.transacName, Toast.LENGTH_SHORT).show()
 //        }
+
+        initLast()
+    }
+
+    override fun onStart() {
+        super.onStart()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(receiver, IntentFilter(InitService.NOTIFICATION))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(receiver)
+
+    }
+
+    private fun initLast() {
+        val intentInitService = Intent(this, InitService::class.java)
+        startService(intentInitService)
     }
 
     override fun onBackPressed() {
@@ -103,8 +141,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
+            R.id.action_settings -> {
+                return true
+            }
+            R.id.nav_item_refresh -> {
+                val dataSenderAsync = DataSenderAsync.getInstance(applicationContext)
+                dataSenderAsync.run()
+                return true
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
         }
     }
 
@@ -161,8 +208,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
             val selectedMerchant = parent.getItemAtPosition(pos) as String
-                    selectedMerchantName = selectedMerchant
-                    Toast.makeText(parent.context, "Selected $selectedMerchant", Toast.LENGTH_SHORT).show()
+            selectedMerchantName = selectedMerchant
+            Toast.makeText(parent.context, "Selected $selectedMerchant", Toast.LENGTH_SHORT).show()
         }
 
         override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -186,23 +233,71 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 etName.error = "Please enter nick name!"
             } else if (etReference.text.toString().isEmpty()) {
                 etReference.error = "Please enter Reference number!"
-            }else {
+            } else {
                 if (bpMerchant != null) {
                     val biller = BPBiller()
                     biller.nickname = etName.text.toString()
                     biller.referenceno = etReference.text.toString()
                     biller.university = bpMerchant
+                    biller.syncStatus = SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_NOT_SYNCED
+                    biller.updatedAt = Calendar.getInstance().time
                     if (biller.save() > 0) {
                         Toast.makeText(this, "Biller saved", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                         list = BPBiller.listAll(BPBiller::class.java)
                         adapter.updateList(list)
+                        val dataSenderAsync = DataSenderAsync.getInstance(applicationContext)
+                        dataSenderAsync.run()
                     } else {
                         Toast.makeText(this, "Error not saved something went wrong", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     Toast.makeText(this, "Merchant no longer exists", Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+    }
+
+    private fun handleResult(bundle: Bundle?) {
+        if (bundle != null) {
+            val resultCode = bundle.getInt(InitService.RESULT)
+            if (resultCode == Activity.RESULT_OK) {
+                //                if (progressDialog != null && progressDialog.isShowing()) {
+                //                    progressDialog.dismiss();
+                //                }
+                Toast.makeText(this, "Init complete", Toast.LENGTH_LONG).show();
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                //                if (progressDialog != null && progressDialog.isShowing()) {
+                //                    progressDialog.dismiss();
+                //                }
+                //                sessionManager.deleteAllUserData();
+                //                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+                //                alert.setTitle("Backup");
+                //                alert.setMessage("Could not fetch data please try again");
+                //                alert.setPositiveButton("Try Again", (dialog, which) -> {
+                //                    if (!NetworkAccess.isNetworkAvailable(getApplicationContext())) {
+                //                        Toast.makeText(getApplicationContext(), "Turn on wifi or Mobile Data", Toast.LENGTH_LONG).show();
+                //                        alert.show();
+                //                    } else {
+                ////                        progressDialog.show();
+                //                        // try fetching again.
+                //                        Intent intentInitService = new Intent(NavigationBottomMainActivity.this, InitService.class);
+                //                        startService(intentInitService);
+                //                        dialog.dismiss();
+                //                    }
+                //                });
+                //                alert.setNegativeButton("Cancel", (dialog, which) -> {
+                //                    sessionManager.logoutUser();
+                //                    startActivity(new Intent(NavigationBottomMainActivity.this, LogInActivity.class));
+                //                    finish();
+                //                    dialog.dismiss();
+                //                }).setCancelable(false);
+                //                alert.show();
+
+                //                sessionManager.logoutUser();
+                //                startActivity(new Intent(NavigationBottomMainActivity.this, LogInActivity.class));
+                //                finish();
+                //                Toast.makeText(NavigationBottomMainActivity.this, "Init failed", Toast.LENGTH_LONG).show();
             }
         }
     }

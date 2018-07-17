@@ -1,0 +1,1 @@
+--alter table BP_MERCHANT add SERVER_ID TEXT;

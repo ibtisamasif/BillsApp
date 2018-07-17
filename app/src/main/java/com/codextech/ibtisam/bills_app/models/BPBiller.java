@@ -2,6 +2,7 @@ package com.codextech.ibtisam.bills_app.models;
 
 import com.orm.SugarRecord;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class BPBiller extends SugarRecord {
@@ -11,9 +12,25 @@ public class BPBiller extends SugarRecord {
     private BPMerchant university;
     private String balance;
     private String status;
+    private String syncStatus;
     private Date updatedAt;
+    private String serverId;
 
     public BPBiller() {
+    }
+
+    public static BPBiller getSubscriberFromServerId(String server_id) {
+        ArrayList<BPBiller> list = null;
+        try {
+            list = (ArrayList<BPBiller>) BPBiller.find(BPBiller.class, "server_id = ? ", server_id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
     }
 
     public String getNickname() {
@@ -62,5 +79,21 @@ public class BPBiller extends SugarRecord {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getSyncStatus() {
+        return syncStatus;
+    }
+
+    public void setSyncStatus(String syncStatus) {
+        this.syncStatus = syncStatus;
+    }
+
+    public String getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 }

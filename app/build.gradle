@@ -42,7 +42,8 @@ dependencies {
     //Optional network helper
     implementation 'com.facebook.stetho:stetho-okhttp:1.3.1'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'com.android.volley:volley:1.0.0'
+    implementation project(':volley-master')
     implementation 'com.mixpanel.android:mixpanel-android:5.2.1'
-
+    implementation 'de.halfbit:tinybus:3.0.2'
+    implementation 'de.halfbit:tinybus-extensions:3.0.2'
 }

@@ -13,6 +13,7 @@ public class BPMerchant extends SugarRecord {
     private String logo;
     private String status;
     private Date updatedAt;
+    private String serverId;
 
     public BPMerchant() {
     }
@@ -21,6 +22,20 @@ public class BPMerchant extends SugarRecord {
         ArrayList<BPMerchant> list = null;
         try {
             list = (ArrayList<BPMerchant>) BPMerchant.find(BPMerchant.class, "name = ? ", name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public static BPMerchant getMerchantFromServerId(String server_id) {
+        ArrayList<BPMerchant> list = null;
+        try {
+            list = (ArrayList<BPMerchant>) BPMerchant.find(BPMerchant.class, "server_id = ? ", server_id);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -77,5 +92,13 @@ public class BPMerchant extends SugarRecord {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 }

@@ -18,7 +18,7 @@
             android:value="sugar_billspk.db" />
         <meta-data
             android:name="VERSION"
-            android:value="4" />
+            android:value="6" />
         <meta-data
             android:name="QUERY_LOG"
             android:value="true" />
@@ -46,6 +46,12 @@
 
         <activity android:name=".activities.MerchantsActivity" />
         <activity android:name=".activities.TransactionsActivity" />
+
+
+
+        <service android:name=".service.InitService">
+            <!-- android:process=":testing"> -->
+        </service>
     </application>
 
 </manifest>

@@ -51,12 +51,8 @@ public class SessionManager {
 
     public static final String IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch";
 
-
-
-
-
     // Sharedpref file name
-    private static final String PREF_NAME = "ProjectLastingSalesPreffs";
+    private static final String PREF_NAME = "ProjectBillsPkPrefs";
     // Shared Preferences
     SharedPreferences pref;
     // Editor for Shared preferences
@@ -73,14 +69,9 @@ public class SessionManager {
         editor = pref.edit();
     }
 
-
-
-    public  boolean getIsFirstTimeLaunch() {
-        return pref.getBoolean(IS_FIRST_TIME_LAUNCH,false);
-
-
+    public boolean getIsFirstTimeLaunch() {
+        return pref.getBoolean(IS_FIRST_TIME_LAUNCH, false);
     }
-
 
     public void storeVersionCodeNow() {
 
@@ -408,6 +399,4 @@ public class SessionManager {
     public boolean isFirstTimeLaunch() {
         return pref.getBoolean(IS_FIRST_TIME_LAUNCH, false);
     }
-
-
 }

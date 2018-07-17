@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -15,15 +16,23 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.codextech.ibtisam.bills_app.SessionManager;
+import com.codextech.ibtisam.bills_app.events.BPMerchantEventModel;
+import com.codextech.ibtisam.bills_app.events.BPSubscriberEventModel;
+import com.codextech.ibtisam.bills_app.models.BPBiller;
 import com.codextech.ibtisam.bills_app.models.BPMerchant;
 import com.codextech.ibtisam.bills_app.sync.MyURLs;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Calendar;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import de.halfbit.tinybus.TinyBus;
 
 
 public class InitService extends IntentService {
@@ -35,7 +44,7 @@ public class InitService extends IntentService {
     private Context mContext;
     private static RequestQueue queue;
     AtomicInteger requestsCounter;
-
+    SessionManager sessionManager;
 //    boolean initError = false;
 
     public InitService() {
@@ -46,6 +55,7 @@ public class InitService extends IntentService {
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         mContext = getApplicationContext();
         queue = Volley.newRequestQueue(mContext);
+        sessionManager = new SessionManager(getApplicationContext());
         requestsCounter = new AtomicInteger(0);
         return super.onStartCommand(intent, flags, startId);
     }
@@ -60,7 +70,7 @@ public class InitService extends IntentService {
             e1.printStackTrace();
         }
 
-//        fetchMerchants();
+        fetchMerchants();
 
         queue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
             @Override
@@ -73,104 +83,174 @@ public class InitService extends IntentService {
                 }
             }
         });
-
     }
 
-//    private void fetchMerchants() {
-//        Log.d(TAG, "fetchBPUniversityDataFunc: Fetching BPMerchant...");
-//        final int MY_SOCKET_TIMEOUT_MS = 60000;
-//        final String BASE_URL = MyURLs.GET_MERCHANTS;
-//        Uri builtUri = Uri.parse(BASE_URL)
-//                .buildUpon()
-//                .appendQueryParameter("limit", "50000")
-////                .appendQueryParameter("page", "1")
-//                .build();
-//        final String myUrl = builtUri.toString();
-//        StringRequest sr = new StringRequest(Request.Method.GET, myUrl, new Response.Listener<String>() {
-//            @Override
-//            public void onResponse(String response) {
-//                Log.d(TAG, "onResponse() getBPUniversity: response = [" + response + "]");
-//
-//                try {
-//                    JSONObject reader = new JSONObject(response);
-//
-//                    final String code = reader.optString("cod");
-//                    if ("404".equals(code)) {
-//                        Log.d(TAG, "onResponse: 404");
-//                    }
-//
-//                    final String idString = reader.getJSONArray("weather").getJSONObject(0).getString("id");
-//
-////                    if (BPMerchant.getBPUniversityFromServerId(idString) == null) {
-//
-//                        BPMerchant newBPUniversity = city;
-//
-//                        newBPUniversity.setServerId(idString);
-//                        String city = reader.getString("name");
-//                        String lastUpdatedAt = reader.getString("dt");
-//                        newBPUniversity.setLastUpdated(lastUpdatedAt);
-//                        String country = "";
-//                        JSONObject countryObj = reader.optJSONObject("sys");
-//                        if (countryObj != null) {
-//                            country = countryObj.getString("country");
-//                            newBPUniversity.setSunrise(countryObj.getString("sunrise"));
-//                            newBPUniversity.setSunset(countryObj.getString("sunset"));
-//                        }
-//                        newBPUniversity.setBPUniversity(city);
-//                        newBPUniversity.setCountry(country);
-//
-//                        JSONObject main = reader.getJSONObject("main");
-//
-//                        newBPUniversity.setTemperature(main.getString("temp"));
-//                        newBPUniversity.setDescription(reader.getJSONArray("weather").getJSONObject(0).getString("description"));
-//                        JSONObject windObj = reader.getJSONObject("wind");
-//                        newBPUniversity.setWind(windObj.getString("speed"));
-//                        if (windObj.has("deg")) {
-//                            newBPUniversity.setWindDirectionDegree(windObj.getDouble("deg"));
-//                        } else {
-//                            Log.e("parseTodayJson", "No wind direction available");
-//                            newBPUniversity.setWindDirectionDegree(null);
-//                        }
-//                        newBPUniversity.setPressure(main.getString("pressure"));
-//                        newBPUniversity.setHumidity(main.getString("humidity"));
-//
-//                        JSONObject rainObj = reader.optJSONObject("rain");
-//                        String rain;
-//                        if (rainObj != null) {
-//                            rain = getRainString(rainObj);
-//                        } else {
-//                            JSONObject snowObj = reader.optJSONObject("snow");
-//                            if (snowObj != null) {
-//                                rain = getRainString(snowObj);
-//                            } else {
-//                                rain = "0";
-//                            }
-//                        }
-//                        newBPUniversity.setRain(rain);
-//                        newBPUniversity.setIcon(setWeatherIcon(Integer.parseInt(idString), Calendar.getInstance().get(Calendar.HOUR_OF_DAY)));
-//                        newBPUniversity.save();
-//                    TinyBus.from(getApplicationContext()).post(new BPUniversityEventModel());
-////                    }
-//                } catch (JSONException e) {
-//                    Log.e("JSONException Data", response);
-//                    e.printStackTrace();
-//                }
-//
+    private void fetchMerchants() {
+        Log.d(TAG, "fetchBPMerchantDataFunc: Fetching BPMerchant...");
+        final int MY_SOCKET_TIMEOUT_MS = 60000;
+        final String BASE_URL = MyURLs.GET_MERCHANTS;
+        Uri builtUri = Uri.parse(BASE_URL)
+                .buildUpon()
+                .appendQueryParameter("limit", "50000")
+//                .appendQueryParameter("page", "1")
+                .build();
+        final String myUrl = builtUri.toString();
+        StringRequest sr = new StringRequest(Request.Method.GET, myUrl, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "onResponse() getBPMerchant: response = [" + response + "]");
+                try {
+                    JSONObject jObj = new JSONObject(response);
+                    int responseCode = jObj.getInt("responseCode");
+                    if (responseCode == 200) {
+                        JSONObject jObjReponse = jObj.getJSONObject("response");
+                        JSONObject jObjPage = jObjReponse.getJSONObject("page");
+                        String totalElements = jObjPage.getString("totalElements");
+
+                        JSONArray jsonArrayData = jObjReponse.getJSONArray("data");
+                        for (int i = 0; i < jsonArrayData.length(); i++) {
+                            JSONObject jsonObjectOneMerchant = jsonArrayData.getJSONObject(i);
+                            String merchant_id = jsonObjectOneMerchant.getString("merchant_id");
+                            String merchant_name = jsonObjectOneMerchant.getString("merchant_name");
+                            String merchant_adderss = jsonObjectOneMerchant.getString("merchant_adderss");
+                            String merchant_logo = jsonObjectOneMerchant.getString("merchant_logo");
+                            String merchant_status = jsonObjectOneMerchant.getString("merchant_status");
+                            String updated_at = jsonObjectOneMerchant.getString("updated_at");
+
+                            Log.d(TAG, "onResponse: merchant_id: " + merchant_id);
+                            Log.d(TAG, "onResponse: merchant_name: " + merchant_name);
+                            Log.d(TAG, "onResponse: merchant_adderss: " + merchant_adderss);
+                            Log.d(TAG, "onResponse: merchant_logo: " + merchant_logo);
+                            Log.d(TAG, "onResponse: merchant_status: " + merchant_status);
+                            Log.d(TAG, "onResponse: updated_at: " + updated_at);
+
+                            if (BPMerchant.getMerchantFromServerId(merchant_id) == null) {
+                                BPMerchant tempMerchant = new BPMerchant();
+                                tempMerchant.setServerId(merchant_id);
+                                tempMerchant.setName(merchant_name);
+                                tempMerchant.setServerId(merchant_id);
+                                tempMerchant.setAddress(merchant_adderss);
+                                tempMerchant.setLogo(merchant_logo);
+                                tempMerchant.setStatus(merchant_status);
+                                tempMerchant.setUpdatedAt(Calendar.getInstance().getTime());
+                                tempMerchant.save();
+                                TinyBus.from(getApplicationContext()).post(new BPMerchantEventModel());
+                            }
+                        }
+                        fetchSubscribers();
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSONException Data", response);
+                    e.printStackTrace();
+                }
 //                result = Activity.RESULT_OK;
-//            }
-//        }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Log.e(TAG, "onErrorResponse: fetchBPUniversityDataFunc");
-//            }
-//        });
-//        sr.setRetryPolicy(new DefaultRetryPolicy(
-//                MY_SOCKET_TIMEOUT_MS,
-//                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-//        queue.add(sr);
-//        requestsCounter.incrementAndGet();
-//    }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, "onErrorResponse: fetchBPMerchantsDataFunc");
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json");
+                params.put("Authorization", "Bearer " + sessionManager.getLoginToken());
+                return params;
+            }
+        };
+        sr.setRetryPolicy(new DefaultRetryPolicy(
+                MY_SOCKET_TIMEOUT_MS,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(sr);
+        requestsCounter.incrementAndGet();
+    }
+
+    private void fetchSubscribers() {
+        Log.d(TAG, "fetchSubscribers: Fetching BPSubscribers...");
+        final int MY_SOCKET_TIMEOUT_MS = 60000;
+        final String BASE_URL = MyURLs.GET_SUBSCRIBERS;
+        Uri builtUri = Uri.parse(BASE_URL)
+                .buildUpon()
+                .appendQueryParameter("limit", "50000")
+//                .appendQueryParameter("page", "1")
+                .build();
+        final String myUrl = builtUri.toString();
+        StringRequest sr = new StringRequest(Request.Method.GET, myUrl, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "onResponse() getBPMerchant: response = [" + response + "]");
+                try {
+                    JSONObject jObj = new JSONObject(response);
+                    int responseCode = jObj.getInt("responseCode");
+                    if (responseCode == 200) {
+                        JSONObject jObjReponse = jObj.getJSONObject("response");
+                        JSONObject jObjPage = jObjReponse.getJSONObject("page");
+                        String totalElements = jObjPage.getString("totalElements");
+
+                        JSONArray jsonArrayData = jObjReponse.getJSONArray("data");
+                        for (int i = 0; i < jsonArrayData.length(); i++) {
+                            JSONObject jsonObjectOneMerchant = jsonArrayData.getJSONObject(i);
+                            String subscriber_id = jsonObjectOneMerchant.getString("subscriber_id");
+                            String subscriber_nickname = jsonObjectOneMerchant.getString("subscriber_nickname");
+                            String subscriber_reference_no = jsonObjectOneMerchant.getString("subscriber_reference_no");
+                            String subscriber_balance = jsonObjectOneMerchant.getString("subscriber_balance");
+                            int user_id = jsonObjectOneMerchant.getInt("user_id");
+                            String merchant_id = jsonObjectOneMerchant.getString("merchant_id");
+                            String updated_at = jsonObjectOneMerchant.getString("updated_at");
+
+                            Log.d(TAG, "onResponse: subscriber_id: " + subscriber_id);
+                            Log.d(TAG, "onResponse: subscriber_nickname: " + subscriber_nickname);
+                            Log.d(TAG, "onResponse: subscriber_reference_no: " + subscriber_reference_no);
+                            Log.d(TAG, "onResponse: subscriber_balance: " + subscriber_balance);
+                            Log.d(TAG, "onResponse: user_id: " + user_id);
+                            Log.d(TAG, "onResponse: merchant_id: " + merchant_id);
+                            Log.d(TAG, "onResponse: updated_at: " + updated_at);
+
+                            if (BPBiller.getSubscriberFromServerId(subscriber_id) == null) {
+                                BPMerchant bpMerchant = BPMerchant.getMerchantFromServerId(merchant_id);
+                                BPBiller tempSubscriber = new BPBiller();
+                                tempSubscriber.setServerId(subscriber_id);
+                                tempSubscriber.setNickname(subscriber_nickname);
+                                tempSubscriber.setReferenceno(subscriber_reference_no);
+                                tempSubscriber.setBalance(subscriber_balance);
+                                if(bpMerchant!=null){
+                                    tempSubscriber.setUniversity(bpMerchant);
+                                }
+                                tempSubscriber.setUpdatedAt(Calendar.getInstance().getTime());
+                                tempSubscriber.save();
+                                TinyBus.from(getApplicationContext()).post(new BPSubscriberEventModel());
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    Log.e("JSONException Data", response);
+                    e.printStackTrace();
+                }
+                result = Activity.RESULT_OK;
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, "onErrorResponse: fetchBPMerchantsDataFunc");
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json");
+                params.put("Authorization", "Bearer " + sessionManager.getLoginToken());
+                return params;
+            }
+        };
+        sr.setRetryPolicy(new DefaultRetryPolicy(
+                MY_SOCKET_TIMEOUT_MS,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(sr);
+        requestsCounter.incrementAndGet();
+    }
 
     private void publishResults(int result) {
         Intent intent = new Intent(NOTIFICATION);

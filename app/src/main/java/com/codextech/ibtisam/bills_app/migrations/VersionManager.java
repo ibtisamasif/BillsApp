@@ -4,17 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.codextech.ibtisam.bills_app.SessionManager;
 import com.codextech.ibtisam.bills_app.app.MixpanelConfig;
 import com.codextech.ibtisam.bills_app.service.InitService;
@@ -22,11 +13,6 @@ import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by ibtisam on 4/1/2017.
@@ -62,8 +48,7 @@ public class VersionManager {
 
             JSONObject props = new JSONObject();
 
-            props.put("$first_name", "" + sessionManager.getKeyLoginFirstName());
-            props.put("$last_name", "" + sessionManager.getKeyLoginLastName());
+            props.put("$user_name", "" + sessionManager.getLoginUsername());
             props.put("activated", "yes");
 //            props.put("Last Activity", "" + PhoneNumberAndCallUtils.getDateTimeStringFromMiliseconds(Calendar.getInstance().getTimeInMillis()));
             mixpanel.getPeople().set(props);
