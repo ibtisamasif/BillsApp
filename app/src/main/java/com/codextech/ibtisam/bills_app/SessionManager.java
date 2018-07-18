@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.codextech.ibtisam.bills_app.models.BPBiller;
+import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 import com.codextech.ibtisam.bills_app.models.BPMerchant;
 import com.codextech.ibtisam.bills_app.models.BPTransac;
 
@@ -171,8 +171,8 @@ public class SessionManager {
         if (BPMerchant.count(BPMerchant.class) > 0) {
             BPMerchant.deleteAll(BPMerchant.class);
         }
-        if (BPBiller.count(BPBiller.class) > 0) {
-            BPBiller.deleteAll(BPBiller.class);
+        if (BPSubscriber.count(BPSubscriber.class) > 0) {
+            BPSubscriber.deleteAll(BPSubscriber.class);
         }
         if (BPTransac.count(BPTransac.class) > 0) {
             BPTransac.deleteAll(BPTransac.class);

@@ -1,7 +1,6 @@
 package com.codextech.ibtisam.bills_app.sync;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -15,7 +14,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.codextech.ibtisam.bills_app.SessionManager;
-import com.codextech.ibtisam.bills_app.models.BPBiller;
+import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 import com.codextech.ibtisam.bills_app.utils.NetworkAccess;
 
 import org.json.JSONException;
@@ -24,8 +23,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import de.halfbit.tinybus.TinyBus;
 
 public class DataSenderAsync {
     public static final String TAG = "DataSenderAsync";
@@ -122,17 +119,17 @@ public class DataSenderAsync {
     }
 
     private void addSubscriberToServer() {
-        List<BPBiller> subscribersList = null;
-        if (BPBiller.count(BPBiller.class) > 0) {
-            subscribersList = BPBiller.find(BPBiller.class, "sync_status = ? ", SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_NOT_SYNCED);
+        List<BPSubscriber> subscribersList = null;
+        if (BPSubscriber.count(BPSubscriber.class) > 0) {
+            subscribersList = BPSubscriber.find(BPSubscriber.class, "sync_status = ? ", SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_NOT_SYNCED);
             Log.d(TAG, "addSubscribersToServer: count : " + subscribersList.size());
-            for (BPBiller oneSubscriber : subscribersList) {
+            for (BPSubscriber oneSubscriber : subscribersList) {
                 addSubscriberToServerSync(oneSubscriber);
             }
         }
     }
 
-    private void addSubscriberToServerSync(final BPBiller biller) {
+    private void addSubscriberToServerSync(final BPSubscriber biller) {
         currentState = PENDING;
         StringRequest sr = new StringRequest(Request.Method.POST, MyURLs.ADD_SUBSCRIBER, new Response.Listener<String>() {
             @Override

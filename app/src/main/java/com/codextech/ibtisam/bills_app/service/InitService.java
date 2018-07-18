@@ -19,7 +19,7 @@ import com.android.volley.toolbox.Volley;
 import com.codextech.ibtisam.bills_app.SessionManager;
 import com.codextech.ibtisam.bills_app.events.BPMerchantEventModel;
 import com.codextech.ibtisam.bills_app.events.BPSubscriberEventModel;
-import com.codextech.ibtisam.bills_app.models.BPBiller;
+import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 import com.codextech.ibtisam.bills_app.models.BPMerchant;
 import com.codextech.ibtisam.bills_app.sync.MyURLs;
 
@@ -208,9 +208,9 @@ public class InitService extends IntentService {
                             Log.d(TAG, "onResponse: merchant_id: " + merchant_id);
                             Log.d(TAG, "onResponse: updated_at: " + updated_at);
 
-                            if (BPBiller.getSubscriberFromServerId(subscriber_id) == null) {
+                            if (BPSubscriber.getSubscriberFromServerId(subscriber_id) == null) {
                                 BPMerchant bpMerchant = BPMerchant.getMerchantFromServerId(merchant_id);
-                                BPBiller tempSubscriber = new BPBiller();
+                                BPSubscriber tempSubscriber = new BPSubscriber();
                                 tempSubscriber.setServerId(subscriber_id);
                                 tempSubscriber.setNickname(subscriber_nickname);
                                 tempSubscriber.setReferenceno(subscriber_reference_no);

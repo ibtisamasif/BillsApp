@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="30dp"
-        android:text="Add Biller"
+        android:text="Add Subscriber"
         android:textSize="30dp" />
 
     <LinearLayout

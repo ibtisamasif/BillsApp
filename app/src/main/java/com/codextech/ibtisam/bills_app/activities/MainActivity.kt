@@ -20,22 +20,26 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import com.codextech.ibtisam.bills_app.R
-import com.codextech.ibtisam.bills_app.adapters.BillerRecyclerAdapter
-import com.codextech.ibtisam.bills_app.models.BPBiller
+import com.codextech.ibtisam.bills_app.SessionManager
+import com.codextech.ibtisam.bills_app.adapters.SubscriberRecyclerAdapter
+import com.codextech.ibtisam.bills_app.models.BPSubscriber
 import com.codextech.ibtisam.bills_app.models.BPMerchant
 import com.codextech.ibtisam.bills_app.service.InitService
 import com.codextech.ibtisam.bills_app.sync.DataSenderAsync
 import com.codextech.ibtisam.bills_app.sync.SyncStatus
+import com.codextech.ibtisam.bills_app.utils.NetworkAccess
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
-    internal lateinit var adapter: BillerRecyclerAdapter
-    internal var list: List<BPBiller> = ArrayList()
+    val TAG = "MainActivity"
+    internal lateinit var adapter: SubscriberRecyclerAdapter
+    internal var list: List<BPSubscriber> = ArrayList()
     private var selectedMerchantName: String? = ""
+    private var sessionManager: SessionManager? = SessionManager(this)
+
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -65,9 +69,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         recyclerView.setLayoutManager(LinearLayoutManager(this))
 
-        list = BPBiller.listAll(BPBiller::class.java)
+        list = BPSubscriber.listAll(BPSubscriber::class.java)
 
-        adapter = BillerRecyclerAdapter(list, this)
+        adapter = SubscriberRecyclerAdapter(list, this)
 
         recyclerView.setAdapter(adapter)
 
@@ -80,7 +84,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            Toast.makeText(this, "University Added", Toast.LENGTH_SHORT).show()
 //        }
 //
-//        val bpBiller: BPBiller? = BPBiller()
+//        val bpBiller: BPSubscriber? = BPSubscriber()
 //        if (bpBiller != null) {
 //            bpBiller.nickname = "ibtii"
 //            bpBiller.referenceno = "bcs02121180"
@@ -118,6 +122,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun initLast() {
+        if (!sessionManager!!.isUserSignedIn()) {
+            startActivity(Intent(this, LogInActivity::class.java))
+            finish()
+            return
+        } else {
+//            val intent = Intent(this, CallDetectionService::class.java)
+//            startService(intent)
+            if (NetworkAccess.isNetworkAvailable(this)) {
+                var merchantsCount = BPMerchant.listAll(BPMerchant::class.java) // If app is crashed here make sure instant run is off. // TODO instead of checking for zero contacts check app init.
+                if (merchantsCount.size < 1) {
+                    Log.d(TAG, "onCreate: BPMerchant.count $merchantsCount")
+                    val intentInitService = Intent(this, InitService::class.java)
+                    startService(intentInitService)
+                }
+            }
+        }
+
         val intentInitService = Intent(this, InitService::class.java)
         startService(intentInitService)
     }
@@ -184,6 +205,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     Toast.makeText(this, "Play store not found.", Toast.LENGTH_SHORT).show()
                 }
             }
+            R.id.nav_settings -> {
+                Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show()
+            }
+            R.id.nav_logout -> {
+                val sessionManager = SessionManager(this)
+                sessionManager.logoutUser()
+                startActivity(Intent(this, LogInActivity::class.java))
+                Toast.makeText(this, "Logout", Toast.LENGTH_SHORT).show()
+            }
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
@@ -218,7 +248,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun addBiller() {
         val dialog = Dialog(this)
-        dialog.setContentView(R.layout.add_biller)
+        dialog.setContentView(R.layout.add_subscriber)
         dialog.setCancelable(true)
         dialog.show()
         addItemsOnSpinnerMerchants(dialog)
@@ -235,7 +265,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 etReference.error = "Please enter Reference number!"
             } else {
                 if (bpMerchant != null) {
-                    val biller = BPBiller()
+                    val biller = BPSubscriber()
                     biller.nickname = etName.text.toString()
                     biller.referenceno = etReference.text.toString()
                     biller.university = bpMerchant
@@ -244,7 +274,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (biller.save() > 0) {
                         Toast.makeText(this, "Biller saved", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
-                        list = BPBiller.listAll(BPBiller::class.java)
+                        list = BPSubscriber.listAll(BPSubscriber::class.java)
                         adapter.updateList(list)
                         val dataSenderAsync = DataSenderAsync.getInstance(applicationContext)
                         dataSenderAsync.run()

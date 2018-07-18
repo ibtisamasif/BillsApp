@@ -5,7 +5,7 @@ import com.orm.SugarRecord;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class BPBiller extends SugarRecord {
+public class BPSubscriber extends SugarRecord {
 
     private String nickname;
     private String referenceno;
@@ -16,13 +16,13 @@ public class BPBiller extends SugarRecord {
     private Date updatedAt;
     private String serverId;
 
-    public BPBiller() {
+    public BPSubscriber() {
     }
 
-    public static BPBiller getSubscriberFromServerId(String server_id) {
-        ArrayList<BPBiller> list = null;
+    public static BPSubscriber getSubscriberFromServerId(String server_id) {
+        ArrayList<BPSubscriber> list = null;
         try {
-            list = (ArrayList<BPBiller>) BPBiller.find(BPBiller.class, "server_id = ? ", server_id);
+            list = (ArrayList<BPSubscriber>) BPSubscriber.find(BPSubscriber.class, "server_id = ? ", server_id);
         } catch (IllegalArgumentException e) {
             return null;
         }

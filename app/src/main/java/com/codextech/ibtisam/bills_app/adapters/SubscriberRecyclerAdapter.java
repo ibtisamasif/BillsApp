@@ -8,24 +8,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codextech.ibtisam.bills_app.R;
-import com.codextech.ibtisam.bills_app.models.BPBiller;
-import com.codextech.ibtisam.bills_app.models.BPTransac;
+import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 
 import java.util.List;
 
-public class BillerRecyclerAdapter extends RecyclerView.Adapter<BillerRecyclerAdapter.OrganizationViewHolder> {
+public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRecyclerAdapter.OrganizationViewHolder> {
 
     private Context mContext;
-    private List<BPBiller> list;
+    private List<BPSubscriber> list;
 
-    public BillerRecyclerAdapter(List<BPBiller> list, Context mContext) {
+    public SubscriberRecyclerAdapter(List<BPSubscriber> list, Context mContext) {
         this.list = list;
         this.mContext = mContext;
     }
 
-    public void updateList(List<BPBiller> newlist) {
+    public void updateList(List<BPSubscriber> newlist) {
         list.clear();
         list.addAll(newlist);
         this.notifyDataSetChanged();
@@ -35,31 +35,42 @@ public class BillerRecyclerAdapter extends RecyclerView.Adapter<BillerRecyclerAd
     @Override
     public OrganizationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.biller_row, parent, false);
+                .inflate(R.layout.subscriber_row, parent, false);
         return new OrganizationViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull OrganizationViewHolder holder, int position) {
-        BPBiller biller = list.get(position);
+        BPSubscriber biller = list.get(position);
         holder.cl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(mContext, "Subsriber status detail screen", Toast.LENGTH_SHORT).show();
 //                Intent detailsActivityIntent = new Intent(mContext, OrganizationDetailsTabActivity.class);
 //                long billerId = biller.getId();
 //                detailsActivityIntent.putExtra(OrganizationDetailsTabActivity.KEY_ORGANIZATION_ID, billerId + "");
 //                mContext.startActivity(detailsActivityIntent);
             }
         });
+        holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(mContext, "Delete Subscriber dialog", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
         if (biller != null) {
             if (biller.getNickname() != null) {
                 holder.tvName.setText(biller.getNickname());
             }
+            if (biller.getUniversity() != null) {
+                holder.tvMerchantName.setText(biller.getUniversity().getName());
+            }
             if (biller.getReferenceno() != null) {
                 holder.tvReferenceNo.setText(biller.getReferenceno());
             }
-            if (biller.getUniversity() != null) {
-                holder.tvMerchantName.setText(biller.getUniversity().getName());
+            if (biller.getBalance() != null) {
+                holder.tvBalance.setText(biller.getBalance());
             }
         }
     }
@@ -79,6 +90,7 @@ public class BillerRecyclerAdapter extends RecyclerView.Adapter<BillerRecyclerAd
         TextView tvName;
         TextView tvReferenceNo;
         TextView tvMerchantName;
+        TextView tvBalance;
 
         OrganizationViewHolder(View itemView) {
             super(itemView);
@@ -86,6 +98,7 @@ public class BillerRecyclerAdapter extends RecyclerView.Adapter<BillerRecyclerAd
             tvName = itemView.findViewById(R.id.tvName);
             tvReferenceNo = itemView.findViewById(R.id.tvReferenceNo);
             tvMerchantName = itemView.findViewById(R.id.tvMerchantName);
+            tvBalance = itemView.findViewById(R.id.tvBalance);
         }
     }
 }
