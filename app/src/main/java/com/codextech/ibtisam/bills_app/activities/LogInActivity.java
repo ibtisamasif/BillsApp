@@ -83,7 +83,7 @@ public class LogInActivity extends AppCompatActivity {
 
 //        hardcoding number and password for development speedup purposes
         etEmail.setText("ibtisamasif@gmail.com");
-        etPassword.setText("123456");
+        etPassword.setText("1234");
 
         loginButtonLoginScreen.setOnClickListener(new View.OnClickListener() {
             @Override

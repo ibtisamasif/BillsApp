@@ -95,6 +95,7 @@ public class InitService extends IntentService {
 //                .appendQueryParameter("page", "1")
                 .build();
         final String myUrl = builtUri.toString();
+        Log.d(TAG, "fetchMerchants: URL: " + myUrl);
         StringRequest sr = new StringRequest(Request.Method.GET, myUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -134,7 +135,6 @@ public class InitService extends IntentService {
                                 tempMerchant.setStatus(merchant_status);
                                 tempMerchant.setUpdatedAt(Calendar.getInstance().getTime());
                                 tempMerchant.save();
-                                TinyBus.from(getApplicationContext()).post(new BPMerchantEventModel());
                             }
                         }
                         fetchSubscribers();
@@ -177,10 +177,11 @@ public class InitService extends IntentService {
 //                .appendQueryParameter("page", "1")
                 .build();
         final String myUrl = builtUri.toString();
+        Log.d(TAG, "fetchSubscribers: URL: " + myUrl);
         StringRequest sr = new StringRequest(Request.Method.GET, myUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, "onResponse() getBPMerchant: response = [" + response + "]");
+                Log.d(TAG, "onResponse() getBPSubscriber: response = [" + response + "]");
                 try {
                     JSONObject jObj = new JSONObject(response);
                     int responseCode = jObj.getInt("responseCode");
@@ -220,9 +221,9 @@ public class InitService extends IntentService {
                                 }
                                 tempSubscriber.setUpdatedAt(Calendar.getInstance().getTime());
                                 tempSubscriber.save();
-                                TinyBus.from(getApplicationContext()).post(new BPSubscriberEventModel());
                             }
                         }
+                        TinyBus.from(getApplicationContext()).post(new BPSubscriberEventModel());
                     }
                 } catch (JSONException e) {
                     Log.e("JSONException Data", response);

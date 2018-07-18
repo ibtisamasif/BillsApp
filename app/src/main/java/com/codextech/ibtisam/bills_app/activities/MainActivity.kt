@@ -22,12 +22,15 @@ import android.widget.*
 import com.codextech.ibtisam.bills_app.R
 import com.codextech.ibtisam.bills_app.SessionManager
 import com.codextech.ibtisam.bills_app.adapters.SubscriberRecyclerAdapter
+import com.codextech.ibtisam.bills_app.events.BPSubscriberEventModel
 import com.codextech.ibtisam.bills_app.models.BPSubscriber
 import com.codextech.ibtisam.bills_app.models.BPMerchant
 import com.codextech.ibtisam.bills_app.service.InitService
 import com.codextech.ibtisam.bills_app.sync.DataSenderAsync
 import com.codextech.ibtisam.bills_app.sync.SyncStatus
 import com.codextech.ibtisam.bills_app.utils.NetworkAccess
+import de.halfbit.tinybus.Subscribe
+import de.halfbit.tinybus.TinyBus
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -38,7 +41,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     internal lateinit var adapter: SubscriberRecyclerAdapter
     internal var list: List<BPSubscriber> = ArrayList()
     private var selectedMerchantName: String? = ""
-    private var sessionManager: SessionManager? = SessionManager(this)
+    private var sessionManager: SessionManager? = null
+    private var bus: TinyBus? = null
 
 
     private val receiver = object : BroadcastReceiver() {
@@ -51,6 +55,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        bus = TinyBus.from(this)
 
         setSupportActionBar(toolbar)
 
@@ -67,13 +73,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         recyclerView.setHasFixedSize(true)
 
-        recyclerView.setLayoutManager(LinearLayoutManager(this))
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
         list = BPSubscriber.listAll(BPSubscriber::class.java)
 
         adapter = SubscriberRecyclerAdapter(list, this)
 
-        recyclerView.setAdapter(adapter)
+        recyclerView.adapter = adapter
 
 //        val bpUniversity: BPMerchant? = BPMerchant()
 //        if (bpUniversity != null) {
@@ -108,21 +114,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStart() {
         super.onStart()
+        bus?.register(this)
     }
 
     override fun onResume() {
+        Log.d(TAG, "onResume: ")
         super.onResume()
         registerReceiver(receiver, IntentFilter(InitService.NOTIFICATION))
     }
 
     override fun onPause() {
+        Log.d(TAG, "onPause: ")
         super.onPause()
         unregisterReceiver(receiver)
+    }
 
+    override fun onStop() {
+        Log.d(TAG, "onStop: ")
+        bus?.unregister(this)
+        super.onStop()
+    }
+
+    @Subscribe
+    fun onSubscriberEventModel(event: BPSubscriberEventModel) {
+        Log.d(TAG, "onSubscriberEventModel: ")
+        list = BPSubscriber.listAll(BPSubscriber::class.java)
+        adapter.notifyDataSetChanged()
     }
 
     private fun initLast() {
-        if (!sessionManager!!.isUserSignedIn()) {
+        sessionManager = SessionManager(this)
+        if (!sessionManager!!.isUserSignedIn) {
             startActivity(Intent(this, LogInActivity::class.java))
             finish()
             return
@@ -130,7 +152,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            val intent = Intent(this, CallDetectionService::class.java)
 //            startService(intent)
             if (NetworkAccess.isNetworkAvailable(this)) {
-                var merchantsCount = BPMerchant.listAll(BPMerchant::class.java) // If app is crashed here make sure instant run is off. // TODO instead of checking for zero contacts check app init.
+                var merchantsCount = BPMerchant.listAll(BPMerchant::class.java)
                 if (merchantsCount.size < 1) {
                     Log.d(TAG, "onCreate: BPMerchant.count $merchantsCount")
                     val intentInitService = Intent(this, InitService::class.java)
@@ -166,8 +188,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return true
             }
             R.id.nav_item_refresh -> {
+                val intentInitService = Intent(this, InitService::class.java)
+                startService(intentInitService)
                 val dataSenderAsync = DataSenderAsync.getInstance(applicationContext)
                 dataSenderAsync.run()
+                Toast.makeText(this,"Refreshed", Toast.LENGTH_SHORT).show()
                 return true
             }
             else -> {
@@ -230,8 +255,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         val dataAdapter = ArrayAdapter(this, R.layout.spinner_item, spinnerList)
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spMerchant.setAdapter(dataAdapter)
-        spMerchant.post(Runnable { spMerchant.setOnItemSelectedListener(MerchantSpinnerOnItemSelectedListener()) })
+        spMerchant.adapter = dataAdapter
+        spMerchant.post(Runnable { spMerchant.onItemSelectedListener = MerchantSpinnerOnItemSelectedListener() })
     }
 
     private inner class MerchantSpinnerOnItemSelectedListener : AdapterView.OnItemSelectedListener {
@@ -295,7 +320,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //                if (progressDialog != null && progressDialog.isShowing()) {
                 //                    progressDialog.dismiss();
                 //                }
-                Toast.makeText(this, "Init complete", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Init complete", Toast.LENGTH_LONG).show()
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 //                if (progressDialog != null && progressDialog.isShowing()) {
                 //                    progressDialog.dismiss();
