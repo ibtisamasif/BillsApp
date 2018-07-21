@@ -5,22 +5,22 @@
     <color name="colorAccent">#FF4081</color>
 
 
-    <color name="Ls.Color.Primary">@color/md_light_blue_600</color>
-    <color name="Ls.Color.Secondary">@color/md_cyan_600</color>
-    <color name="Ls.Color.Red">@color/md_red_600</color>
-    <color name="Ls.Color.Warning">@color/md_orange_600</color>
-    <color name="Ls.Color.Success">@color/md_teal_600</color>
-    <color name="Ls.Color.Info">@color/md_light_blue_600</color>
-    <color name="Ls.Color.Default">@color/md_grey_600</color>
-    <color name="Ls.Color.Background">@color/md_blue_grey_50</color>
+    <color name="Color.Primary">@color/md_light_blue_600</color>
+    <color name="Color.Secondary">@color/md_cyan_600</color>
+    <color name="Color.Red">@color/md_red_600</color>
+    <color name="Color.Warning">@color/md_orange_600</color>
+    <color name="Color.Success">@color/md_teal_600</color>
+    <color name="Color.Info">@color/md_light_blue_600</color>
+    <color name="Color.Default">@color/md_grey_600</color>
+    <color name="Color.Background">@color/md_blue_grey_50</color>
 
-    <color name="Ls.Color.Text.Default">@color/md_grey_600</color>
-    <color name="Ls.Color.Text.Primary">@color/md_light_blue_600</color>
-    <color name="Ls.Color.Text.Secondary">@color/md_cyan_600</color>
+    <color name="Color.Text.Default">@color/md_grey_600</color>
+    <color name="Color.Text.Primary">@color/md_light_blue_600</color>
+    <color name="Color.Text.Secondary">@color/md_cyan_600</color>
 
-    <color name="Ls.Color.Button.Text.Default">@color/md_white</color>
-    <color name="Ls.Color.Button.Text.Primary">@color/md_white</color>
-    <color name="Ls.Color.Button.Text.Secondary">@color/md_white</color>
+    <color name="Color.Button.Text.Default">@color/md_white</color>
+    <color name="Color.Button.Text.Primary">@color/md_white</color>
+    <color name="Color.Button.Text.Secondary">@color/md_white</color>
     <!--
 
       _____      _                            _____      _

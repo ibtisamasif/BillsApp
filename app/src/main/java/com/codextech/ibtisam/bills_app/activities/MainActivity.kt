@@ -19,6 +19,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import com.bumptech.glide.Glide
 import com.codextech.ibtisam.bills_app.R
 import com.codextech.ibtisam.bills_app.SessionManager
 import com.codextech.ibtisam.bills_app.adapters.SubscriberRecyclerAdapter
@@ -28,12 +29,14 @@ import com.codextech.ibtisam.bills_app.models.BPMerchant
 import com.codextech.ibtisam.bills_app.service.InitService
 import com.codextech.ibtisam.bills_app.sync.DataSenderAsync
 import com.codextech.ibtisam.bills_app.sync.SyncStatus
+import com.codextech.ibtisam.bills_app.utils.HelpingMethods
 import com.codextech.ibtisam.bills_app.utils.NetworkAccess
 import de.halfbit.tinybus.Subscribe
 import de.halfbit.tinybus.TinyBus
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.nav_header_main.*
 import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     internal var list: List<BPSubscriber> = ArrayList()
     private var selectedMerchantName: String? = ""
     private var sessionManager: SessionManager? = null
+
     private var bus: TinyBus? = null
 
 
@@ -66,6 +70,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+        val hView: View =  nav_view.getHeaderView(0)
+        sessionManager = SessionManager(this)
+        val textView: TextView = hView.findViewById(R.id.tvName)
+        var username = sessionManager?.loginUsername
+        textView.setText(username)
+
+        val tvEmail: TextView = hView.findViewById(R.id.tvEmail)
+        var email = sessionManager?.keyLoginEmail
+        tvEmail.setText(email)
+
+        val ivUserAvatar: ImageView = hView.findViewById(R.id.ivUserAvatar)
+        Glide.with(this).load(sessionManager?.keyLoginImagePath).into(ivUserAvatar)
 
         fab.setOnClickListener { view ->
             addBiller()
@@ -143,7 +159,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun initLast() {
-        sessionManager = SessionManager(this)
         if (!sessionManager!!.isUserSignedIn) {
             startActivity(Intent(this, LogInActivity::class.java))
             finish()
@@ -204,9 +219,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
-            R.id.nav_pay_bill -> {
-                Toast.makeText(this, "Pay bill.", Toast.LENGTH_SHORT).show()
-            }
             R.id.nav_merchants -> {
                 val intent = Intent(this, MerchantsActivity::class.java)
                 startActivity(intent)
@@ -293,7 +305,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val biller = BPSubscriber()
                     biller.nickname = etName.text.toString()
                     biller.referenceno = etReference.text.toString()
-                    biller.university = bpMerchant
+                    biller.merchant = bpMerchant
                     biller.syncStatus = SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_NOT_SYNCED
                     biller.updatedAt = Calendar.getInstance().time
                     if (biller.save() > 0) {

@@ -1,20 +1,27 @@
 package com.codextech.ibtisam.bills_app.models;
 
 import com.orm.SugarRecord;
+import com.orm.dsl.Ignore;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 public class BPSubscriber extends SugarRecord {
+    @Ignore
+    public static final String SUBSCRIBER_BILL_PAID = "paid";
+    public static final String SUBSCRIBER_BILL_UNPAID = "unpaid";
 
     private String nickname;
     private String referenceno;
-    private BPMerchant university;
+    private BPMerchant merchant;
     private String balance;
     private String status;
     private String syncStatus;
     private Date updatedAt;
     private String serverId;
+
+    private String duesStatus;
+    private String duesDate;
 
     public BPSubscriber() {
     }
@@ -49,12 +56,12 @@ public class BPSubscriber extends SugarRecord {
         this.referenceno = referenceno;
     }
 
-    public BPMerchant getUniversity() {
-        return university;
+    public BPMerchant getMerchant() {
+        return merchant;
     }
 
-    public void setUniversity(BPMerchant university) {
-        this.university = university;
+    public void setMerchant(BPMerchant merchant) {
+        this.merchant = merchant;
     }
 
     public String getBalance() {
@@ -95,5 +102,21 @@ public class BPSubscriber extends SugarRecord {
 
     public void setServerId(String serverId) {
         this.serverId = serverId;
+    }
+
+    public String getDuesStatus() {
+        return duesStatus;
+    }
+
+    public void setDuesStatus(String duesStatus) {
+        this.duesStatus = duesStatus;
+    }
+
+    public String getDuesDate() {
+        return duesDate;
+    }
+
+    public void setDuesDate(String duesDate) {
+        this.duesDate = duesDate;
     }
 }

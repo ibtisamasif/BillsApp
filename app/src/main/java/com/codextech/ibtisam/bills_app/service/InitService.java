@@ -216,8 +216,10 @@ public class InitService extends IntentService {
                                 tempSubscriber.setNickname(subscriber_nickname);
                                 tempSubscriber.setReferenceno(subscriber_reference_no);
                                 tempSubscriber.setBalance(subscriber_balance);
-                                if(bpMerchant!=null){
-                                    tempSubscriber.setUniversity(bpMerchant);
+                                tempSubscriber.setDuesStatus("unpaid");
+                                tempSubscriber.setDuesDate("28/06/2018");
+                                if (bpMerchant != null) {
+                                    tempSubscriber.setMerchant(bpMerchant);
                                 }
                                 tempSubscriber.setUpdatedAt(Calendar.getInstance().getTime());
                                 tempSubscriber.save();

@@ -46,8 +46,7 @@
 
         <activity android:name=".activities.MerchantsActivity" />
         <activity android:name=".activities.TransactionsActivity" />
-
-
+        <activity android:name=".activities.SubscriberDetailActivity" />
 
         <service android:name=".service.InitService">
             <!-- android:process=":testing"> -->

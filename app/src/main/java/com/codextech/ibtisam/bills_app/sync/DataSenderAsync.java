@@ -129,7 +129,7 @@ public class DataSenderAsync {
         }
     }
 
-    private void addSubscriberToServerSync(final BPSubscriber biller) {
+    private void addSubscriberToServerSync(final BPSubscriber subscriber) {
         currentState = PENDING;
         StringRequest sr = new StringRequest(Request.Method.POST, MyURLs.ADD_SUBSCRIBER, new Response.Listener<String>() {
             @Override
@@ -138,18 +138,18 @@ public class DataSenderAsync {
                 try {
                     JSONObject jObj = new JSONObject(response);
                     JSONObject responseObject = jObj.getJSONObject("response");
-                    biller.setNickname(responseObject.getString("subscriber_nickname"));
-                    biller.setReferenceno(responseObject.getString("subscriber_reference_no"));
-                    biller.setStatus(responseObject.getString("subscriber_status"));
-                    biller.setBalance(responseObject.getInt("subscriber_balance") + "");
-                    biller.setServerId(responseObject.getString("subscriber_id"));
+                    subscriber.setNickname(responseObject.getString("subscriber_nickname"));
+                    subscriber.setReferenceno(responseObject.getString("subscriber_reference_no"));
+                    subscriber.setStatus(responseObject.getString("subscriber_status"));
+                    subscriber.setBalance(responseObject.getInt("subscriber_balance") + "");
+                    subscriber.setServerId(responseObject.getString("subscriber_id"));
                     Log.d(TAG, "onResponse: subscriber_id : " + responseObject.getString("subscriber_id"));
                     Log.d(TAG, "onResponse: subscriber_nickname : " + responseObject.getString("subscriber_nickname"));
                     Log.d(TAG, "onResponse: subscriber_reference_no : " + responseObject.getString("subscriber_reference_no"));
                     Log.d(TAG, "onResponse: subscriber_status : " + responseObject.getString("subscriber_status"));
                     Log.d(TAG, "onResponse: subscriber_balance : " + responseObject.getString("subscriber_balance"));
-                    biller.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_SYNCED);
-                    biller.save();
+                    subscriber.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_SYNCED);
+                    subscriber.save();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -168,9 +168,9 @@ public class DataSenderAsync {
                                 if (responseCode == 409) { //already exists on server
                                     Log.d(TAG, "onErrorResponse: responseCode == 409");
 //                                    JSONObject responseObject = jObj.getJSONObject("response"); //TODO uncomment later
-//                                    biller.setServerId(responseObject.getString("id"));
-                                    biller.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_SYNCED);
-                                    biller.save();
+//                                    subscriber.setServerId(responseObject.getString("id"));
+                                    subscriber.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_SYNCED);
+                                    subscriber.save();
                                 }
                             }
                         }
@@ -192,10 +192,10 @@ public class DataSenderAsync {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("subscriber[subscriber_nickname]", "" + biller.getNickname());
-                params.put("subscriber[subscriber_reference_no]", "" + biller.getReferenceno());
-                if (biller.getUniversity() != null) {
-                    params.put("subscriber[merchant_id]", "" + biller.getUniversity().getId());
+                params.put("subscriber[subscriber_nickname]", "" + subscriber.getNickname());
+                params.put("subscriber[subscriber_reference_no]", "" + subscriber.getReferenceno());
+                if (subscriber.getMerchant() != null) {
+                    params.put("subscriber[merchant_id]", "" + subscriber.getMerchant().getId());
                 }
                 Log.d(TAG, "getParams: addSubscriberToServerSync " + params);
                 return params;

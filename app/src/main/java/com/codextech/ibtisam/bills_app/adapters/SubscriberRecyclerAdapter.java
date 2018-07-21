@@ -1,6 +1,7 @@
 package com.codextech.ibtisam.bills_app.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codextech.ibtisam.bills_app.R;
+import com.codextech.ibtisam.bills_app.activities.SubscriberDetailActivity;
 import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 
 import java.util.List;
@@ -41,15 +43,14 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
 
     @Override
     public void onBindViewHolder(@NonNull OrganizationViewHolder holder, int position) {
-        BPSubscriber biller = list.get(position);
+        final BPSubscriber subscriber = list.get(position);
         holder.cl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(mContext, "Subsriber status detail screen", Toast.LENGTH_SHORT).show();
-//                Intent detailsActivityIntent = new Intent(mContext, OrganizationDetailsTabActivity.class);
-//                long billerId = biller.getId();
-//                detailsActivityIntent.putExtra(OrganizationDetailsTabActivity.KEY_ORGANIZATION_ID, billerId + "");
-//                mContext.startActivity(detailsActivityIntent);
+                Intent detailsActivityIntent = new Intent(mContext, SubscriberDetailActivity.class);
+                detailsActivityIntent.putExtra(SubscriberDetailActivity.KEY_SUBSCRIBER_ID, subscriber.getId());
+                mContext.startActivity(detailsActivityIntent);
             }
         });
         holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
@@ -59,18 +60,18 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
                 return false;
             }
         });
-        if (biller != null) {
-            if (biller.getNickname() != null) {
-                holder.tvName.setText(biller.getNickname());
+        if (subscriber != null) {
+            if (subscriber.getNickname() != null) {
+                holder.tvName.setText(subscriber.getNickname());
             }
-            if (biller.getUniversity() != null) {
-                holder.tvMerchantName.setText(biller.getUniversity().getName());
+            if (subscriber.getMerchant() != null) {
+                holder.tvMerchantName.setText(subscriber.getMerchant().getName());
             }
-            if (biller.getReferenceno() != null) {
-                holder.tvReferenceNo.setText(biller.getReferenceno());
+            if (subscriber.getReferenceno() != null) {
+                holder.tvReferenceNo.setText(subscriber.getReferenceno());
             }
-            if (biller.getBalance() != null) {
-                holder.tvBalance.setText(biller.getBalance());
+            if (subscriber.getBalance() != null) {
+                holder.tvBalance.setText(subscriber.getBalance());
             }
         }
     }
@@ -98,7 +99,7 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
             tvName = itemView.findViewById(R.id.tvName);
             tvReferenceNo = itemView.findViewById(R.id.tvReferenceNo);
             tvMerchantName = itemView.findViewById(R.id.tvMerchantName);
-            tvBalance = itemView.findViewById(R.id.tvBalance);
+            tvBalance = itemView.findViewById(R.id.tvDues);
         }
     }
 }
