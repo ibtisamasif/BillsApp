@@ -47,7 +47,6 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
         holder.cl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(mContext, "Subsriber status detail screen", Toast.LENGTH_SHORT).show();
                 Intent detailsActivityIntent = new Intent(mContext, SubscriberDetailActivity.class);
                 detailsActivityIntent.putExtra(SubscriberDetailActivity.KEY_SUBSCRIBER_ID, subscriber.getId());
                 mContext.startActivity(detailsActivityIntent);
