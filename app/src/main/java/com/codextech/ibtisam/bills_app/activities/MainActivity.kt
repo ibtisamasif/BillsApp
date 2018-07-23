@@ -13,6 +13,7 @@ import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.Menu
@@ -35,6 +36,7 @@ import de.halfbit.tinybus.Subscribe
 import de.halfbit.tinybus.TinyBus
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.card_balance.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import java.util.*
@@ -68,7 +70,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-
+        nav_view.itemIconTintList = null
         nav_view.setNavigationItemSelectedListener(this)
         val hView: View =  nav_view.getHeaderView(0)
         sessionManager = SessionManager(this)
@@ -96,6 +98,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         adapter = SubscriberRecyclerAdapter(list, this)
 
         recyclerView.adapter = adapter
+
+        var walletbalance = sessionManager?.keyLoginWalletBalance
+
+        tvValue.setText(walletbalance)
+
+//        val balanceVal = findViewById<CardView>(R.id.cv_item_balance)
+//        balanceVal.setOnClickListener{
+//            Toast.makeText(this, "card Clicked", Toast.LENGTH_SHORT).show()
+//        }
 
 //        val bpUniversity: BPMerchant? = BPMerchant()
 //        if (bpUniversity != null) {
@@ -199,9 +210,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_settings -> {
-                return true
-            }
             R.id.nav_item_refresh -> {
                 val intentInitService = Intent(this, InitService::class.java)
                 startService(intentInitService)

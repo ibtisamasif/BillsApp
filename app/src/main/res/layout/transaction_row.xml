@@ -42,7 +42,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_payment" />
+            app:srcCompat="@drawable/ic_transaction_24dp" />
 
         <TextView
             android:id="@+id/tvTransaction"

@@ -1,15 +1,18 @@
 package com.codextech.ibtisam.bills_app.activities;
 
+import android.app.ActionBar;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codextech.ibtisam.bills_app.R;
+import com.codextech.ibtisam.bills_app.SessionManager;
 import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 
 public class SubscriberDetailActivity extends AppCompatActivity {
@@ -27,6 +30,8 @@ public class SubscriberDetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subsriber_detail);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Details");
 
         tvName = findViewById(R.id.tvName);
         tvNickName = findViewById(R.id.tvNickName);
@@ -40,9 +45,13 @@ public class SubscriberDetailActivity extends AppCompatActivity {
         bPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(SubscriberDetailActivity.this, "Paying Bill", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SubscriberDetailActivity.this, "Paying Bill..", Toast.LENGTH_SHORT).show();
             }
         });
+        SessionManager sessionManager = new SessionManager(this);
+        View view = findViewById(R.id.include2);
+        TextView tvValue = view.findViewById(R.id.tvValue);
+        tvValue.setText(sessionManager.getKeyLoginWalletBalance());
     }
 
     @Override
@@ -73,18 +82,29 @@ public class SubscriberDetailActivity extends AppCompatActivity {
                     tvDuesStatus.setTextColor(Color.parseColor("#E53935"));
                 } else if (selectedSubscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_PAID)) {
                     tvDuesStatus.setText("PAID");
-                    tvDuesStatus.setTextColor(Color.parseColor("#000000"));
+                    tvDuesStatus.setTextColor(Color.parseColor("#00897b"));
                 }
-            }else {
-                tvDuesStatus.setText("Paid");
-                tvDuesStatus.setTextColor(Color.parseColor("#000000"));
+            } else {
+                tvDuesStatus.setText("PAID");
+                tvDuesStatus.setTextColor(Color.parseColor("#00897b"));
             }
             if (selectedSubscriber.getBalance() != null) {
                 tvDues.setText(selectedSubscriber.getBalance());
             }
             if (selectedSubscriber.getDuesDate() != null) {
-                tvDueDate.setText("28/08/2018");
+                tvDueDate.setText(selectedSubscriber.getDuesDate());
             }
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

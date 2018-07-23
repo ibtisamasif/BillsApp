@@ -60,7 +60,7 @@
                             android:layout_weight="1"
                             android:inputType="textPersonName"
                             android:padding="8dp"
-                            android:text="Ibtisam" />
+                            android:hint="Ibtisam" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -84,7 +84,7 @@
                             android:layout_weight="1"
                             android:inputType="number"
                             android:padding="8dp"
-                            android:text="1122334455" />
+                            android:hint="1122334455" />
                     </LinearLayout>
 
                     <LinearLayout

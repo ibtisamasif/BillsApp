@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
 
+    <color name="colorPrimary">@color/md_teal_600</color>
+    <color name="colorPrimaryDark">@color/md_teal_800</color>
+    <color name="colorAccent">@color/colorPrimary</color>
+
+    <!--<color name="colorPrimary">#3F51B5</color>-->
+    <!--<color name="colorPrimaryDark">#303F9F</color>-->
+    <!--<color name="colorAccent">#FF4081</color>-->
 
     <color name="Color.Primary">@color/md_light_blue_600</color>
     <color name="Color.Secondary">@color/md_cyan_600</color>

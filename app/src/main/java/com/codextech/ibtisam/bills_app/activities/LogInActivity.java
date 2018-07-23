@@ -172,6 +172,7 @@ public class LogInActivity extends AppCompatActivity {
                         String user_scope = responseObject.getString("user_scope");
                         String user_fcm_id = responseObject.getString("user_fcm_id");
                         String user_image = responseObject.getString("user_image");
+                        String user_wallet_balance = responseObject.getString("user_wallet_balance");
                         String iat = responseObject.getString("iat");
 
                         Log.d(TAG, "onResponse: user_id: " + user_id);
@@ -180,9 +181,10 @@ public class LogInActivity extends AppCompatActivity {
                         Log.d(TAG, "onResponse: user_scope: " + user_scope);
                         Log.d(TAG, "onResponse: user_fcm_id: " + user_fcm_id);
                         Log.d(TAG, "onResponse: user_image: " + user_image);
+                        Log.d(TAG, "onResponse: user_wallet_balance: " + user_wallet_balance);
                         Log.d(TAG, "onResponse: iat: " + iat);
 
-                        sessionManager.loginnUser(user_id, access_token, Calendar.getInstance().getTimeInMillis(), user_name, user_image, user_email, user_scope);
+                        sessionManager.loginnUser(user_id, access_token, Calendar.getInstance().getTimeInMillis(), user_name, user_image, user_email, user_scope,user_wallet_balance);
 
                         startActivity(new Intent(LogInActivity.this, MainActivity.class));
                         finish();

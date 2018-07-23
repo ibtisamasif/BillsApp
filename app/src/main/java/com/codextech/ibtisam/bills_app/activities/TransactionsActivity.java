@@ -7,12 +7,15 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codextech.ibtisam.bills_app.R;
+import com.codextech.ibtisam.bills_app.SessionManager;
 import com.codextech.ibtisam.bills_app.adapters.TransactionRecyclerAdapter;
 import com.codextech.ibtisam.bills_app.models.BPMerchant;
 import com.codextech.ibtisam.bills_app.models.BPTransac;
@@ -31,6 +34,7 @@ public class TransactionsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transactions);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Transactions");
 
         add_fab = findViewById(R.id.add_fab);
@@ -53,6 +57,10 @@ public class TransactionsActivity extends AppCompatActivity {
         adapter = new TransactionRecyclerAdapter(list, TransactionsActivity.this);
 
         recyclerView.setAdapter(adapter);
+        SessionManager sessionManager = new SessionManager(this);
+        View view = findViewById(R.id.include2);
+        TextView tvValue = view.findViewById(R.id.tvValue);
+        tvValue.setText(sessionManager.getKeyLoginWalletBalance());
     }
 
     private void addTransaction() {
@@ -100,5 +108,16 @@ public class TransactionsActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

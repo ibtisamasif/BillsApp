@@ -125,11 +125,17 @@ public class InitService extends IntentService {
                             Log.d(TAG, "onResponse: merchant_status: " + merchant_status);
                             Log.d(TAG, "onResponse: updated_at: " + updated_at);
 
-                            if (BPMerchant.getMerchantFromServerId(merchant_id) == null) {
-                                BPMerchant tempMerchant = new BPMerchant();
+                            BPMerchant tempMerchant = BPMerchant.getMerchantFromServerId(merchant_id);
+                            if (tempMerchant != null) {
                                 tempMerchant.setServerId(merchant_id);
                                 tempMerchant.setName(merchant_name);
-                                tempMerchant.setServerId(merchant_id);
+                                tempMerchant.setAddress(merchant_adderss);
+                                tempMerchant.setLogo(merchant_logo);
+                                tempMerchant.setStatus(merchant_status);
+                                tempMerchant.setUpdatedAt(Calendar.getInstance().getTime());
+                                tempMerchant.save();
+                            } else {
+                                tempMerchant.setName(merchant_name);
                                 tempMerchant.setAddress(merchant_adderss);
                                 tempMerchant.setLogo(merchant_logo);
                                 tempMerchant.setStatus(merchant_status);
@@ -200,6 +206,9 @@ public class InitService extends IntentService {
                             int user_id = jsonObjectOneMerchant.getInt("user_id");
                             String merchant_id = jsonObjectOneMerchant.getString("merchant_id");
                             String updated_at = jsonObjectOneMerchant.getString("updated_at");
+                            String due_date = "";
+                            if (jsonObjectOneMerchant.has("due_date"))
+                                due_date = jsonObjectOneMerchant.getString("due_date");
 
                             Log.d(TAG, "onResponse: subscriber_id: " + subscriber_id);
                             Log.d(TAG, "onResponse: subscriber_nickname: " + subscriber_nickname);
@@ -208,21 +217,39 @@ public class InitService extends IntentService {
                             Log.d(TAG, "onResponse: user_id: " + user_id);
                             Log.d(TAG, "onResponse: merchant_id: " + merchant_id);
                             Log.d(TAG, "onResponse: updated_at: " + updated_at);
+                            Log.d(TAG, "onResponse: due_date: " + due_date);
 
-                            if (BPSubscriber.getSubscriberFromServerId(subscriber_id) == null) {
-                                BPMerchant bpMerchant = BPMerchant.getMerchantFromServerId(merchant_id);
-                                BPSubscriber tempSubscriber = new BPSubscriber();
-                                tempSubscriber.setServerId(subscriber_id);
+                            BPSubscriber tempSubscriber = BPSubscriber.getSubscriberFromServerId(subscriber_id);
+                            if (tempSubscriber != null) {
                                 tempSubscriber.setNickname(subscriber_nickname);
                                 tempSubscriber.setReferenceno(subscriber_reference_no);
                                 tempSubscriber.setBalance(subscriber_balance);
                                 tempSubscriber.setDuesStatus("unpaid");
-                                tempSubscriber.setDuesDate("28/06/2018");
+                                if (due_date != null && !due_date.equalsIgnoreCase("")) {
+                                    tempSubscriber.setDuesDate(due_date);
+                                }
+                                BPMerchant bpMerchant = BPMerchant.getMerchantFromServerId(merchant_id);
                                 if (bpMerchant != null) {
                                     tempSubscriber.setMerchant(bpMerchant);
                                 }
                                 tempSubscriber.setUpdatedAt(Calendar.getInstance().getTime());
                                 tempSubscriber.save();
+                            } else {
+                                BPSubscriber newSubscriber = new BPSubscriber();
+                                newSubscriber.setServerId(subscriber_id);
+                                newSubscriber.setNickname(subscriber_nickname);
+                                newSubscriber.setReferenceno(subscriber_reference_no);
+                                newSubscriber.setBalance(subscriber_balance);
+                                newSubscriber.setDuesStatus("unpaid");
+                                if (due_date != null && !due_date.equalsIgnoreCase("")) {
+                                    newSubscriber.setDuesDate(due_date);
+                                }
+                                BPMerchant bpMerchant = BPMerchant.getMerchantFromServerId(merchant_id);
+                                if (bpMerchant != null) {
+                                    newSubscriber.setMerchant(bpMerchant);
+                                }
+                                newSubscriber.setUpdatedAt(Calendar.getInstance().getTime());
+                                newSubscriber.save();
                             }
                         }
                         TinyBus.from(getApplicationContext()).post(new BPSubscriberEventModel());

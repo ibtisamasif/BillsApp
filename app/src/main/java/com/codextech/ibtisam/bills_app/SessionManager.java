@@ -21,6 +21,7 @@ public class SessionManager {
     private static final String KEY_LOGIN_FIREBASE_REG_ID = "user_login_firebase_reg_id";
     private static final String KEY_LOGIN_EMAIL = "user_login_email";
     private static final String KEY_LOGIN_ROLE_NAME = "user_login_role_name";
+    private static final String KEY_LOGIN_WALLET_BALANCE = "user_login_wallet_balance";
 
     public static final String KEY_INIT_COMPLETED = "init_completed";
     public static final String KEY_INIT_TEAM_ADDED = "init_team_added";
@@ -136,7 +137,7 @@ public class SessionManager {
         return true;
     }
 
-    public void loginnUser(String userId, String token, Long timeStamp, String username, String imagePath, String email, String role_role) {
+    public void loginnUser(String userId, String token, Long timeStamp, String username, String imagePath, String email, String role_role, String user_wallet_balance) {
         Log.d(TAG, "loginnUser: ");
         deleteDataIfDifferentUser(username);
         setLoginUsername(username);
@@ -146,6 +147,7 @@ public class SessionManager {
         setKeyLoginImagePath(imagePath);
         setKeyLoginEmail(email);
         setKeyLoginRoleName(role_role);
+        setKeyLoginWalletBalance(user_wallet_balance);
         editor.commit();
     }
 
@@ -185,8 +187,13 @@ public class SessionManager {
     public void logoutUser() {
         deleteAllUserData();
         setLoginTimestamp(00L);
+        setKeyLoginId("");
+        setLoginUsername("");
+        setKeyLoginEmail("");
+        setKeyLoginWalletBalance("");
         setLoginToken("");
         setKeyLoginImagePath("");
+        setKeyLoginRoleName("");
         setReadyForFirstRun(true);
         editor.commit();
     }
@@ -310,12 +317,12 @@ public class SessionManager {
         editor.commit();
     }
 
-    public String getKeyInitAccountTypeSelected() {
-        return pref.getString(KEY_INIT_ACCOUNT_TYPE_SELECTED, "");
+    public String getKeyLoginWalletBalance() {
+        return pref.getString(KEY_LOGIN_WALLET_BALANCE, "");
     }
 
-    public void setKeyInitAccountTypeSelected(String type) {
-        editor.putString(KEY_INIT_ACCOUNT_TYPE_SELECTED, type);
+    public void setKeyLoginWalletBalance(String balance) {
+        editor.putString(KEY_LOGIN_WALLET_BALANCE, balance);
         editor.commit();
     }
 
@@ -399,4 +406,6 @@ public class SessionManager {
     public boolean isFirstTimeLaunch() {
         return pref.getBoolean(IS_FIRST_TIME_LAUNCH, false);
     }
+
+
 }
