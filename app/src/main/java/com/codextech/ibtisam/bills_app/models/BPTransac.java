@@ -1,6 +1,13 @@
 package com.codextech.ibtisam.bills_app.models;
 
+import android.database.sqlite.SQLiteException;
+
 import com.orm.SugarRecord;
+import com.orm.query.Select;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class BPTransac extends SugarRecord {
 
@@ -9,8 +16,17 @@ public class BPTransac extends SugarRecord {
     private String transacType;
     private String transacBeneficiary;
     private String transacRemarks;
+    private Date updatedAt;
 
     public BPTransac() {
+    }
+
+    public static List<BPTransac> getTransactionsInDescOrder() {
+        try {
+            return Select.from(BPTransac.class).orderBy("updated_at DESC").list();
+        } catch (SQLiteException e) {
+            return new ArrayList<BPTransac>();
+        }
     }
 
     public String getTransacName() {
@@ -51,5 +67,13 @@ public class BPTransac extends SugarRecord {
 
     public void setTransacRemarks(String transacRemarks) {
         this.transacRemarks = transacRemarks;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

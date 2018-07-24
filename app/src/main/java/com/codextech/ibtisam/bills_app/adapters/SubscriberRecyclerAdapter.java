@@ -2,12 +2,14 @@ package com.codextech.ibtisam.bills_app.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,13 +54,6 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
                 mContext.startActivity(detailsActivityIntent);
             }
         });
-        holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(mContext, "Delete Subscriber dialog", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
         if (subscriber != null) {
             if (subscriber.getNickname() != null) {
                 holder.tvName.setText(subscriber.getNickname());
@@ -72,7 +67,39 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
             if (subscriber.getBalance() != null) {
                 holder.tvBalance.setText(subscriber.getBalance());
             }
+            if (subscriber.getDuesDate() != null) {
+                holder.tvDueDate.setText(subscriber.getDuesDate());
+            }
         }
+        holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(mContext, "Delete Subscriber dialog", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
+        if (subscriber.getDuesStatus() != null) {
+            if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_UNPAID)) {
+                holder.bPay.setText("PAY");
+                holder.bPay.setFocusable(true);
+            } else if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_PAID)) {
+                holder.bPay.setText("PAID");
+                holder.bPay.setBackgroundColor(mContext.getResources().getColor(R.color.Color_Default));
+            }
+        } else {
+            holder.bPay.setText("PAID");
+            holder.bPay.setBackgroundColor(mContext.getResources().getColor(R.color.Color_Default));
+        }
+
+        holder.bPay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                subscriber.setBalance("0");
+                subscriber.setDuesStatus("paid");
+                subscriber.save();
+                Toast.makeText(mContext, "Bill Paid successfully.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -91,6 +118,8 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
         TextView tvReferenceNo;
         TextView tvMerchantName;
         TextView tvBalance;
+        TextView tvDueDate;
+        Button bPay;
 
         OrganizationViewHolder(View itemView) {
             super(itemView);
@@ -99,6 +128,8 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
             tvReferenceNo = itemView.findViewById(R.id.tvReferenceNo);
             tvMerchantName = itemView.findViewById(R.id.tvMerchantName);
             tvBalance = itemView.findViewById(R.id.tvDues);
+            tvDueDate = itemView.findViewById(R.id.tvDueDate);
+            bPay = itemView.findViewById(R.id.bPay);
         }
     }
 }

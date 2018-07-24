@@ -195,7 +195,7 @@ public class DataSenderAsync {
                 params.put("subscriber[subscriber_nickname]", "" + subscriber.getNickname());
                 params.put("subscriber[subscriber_reference_no]", "" + subscriber.getReferenceno());
                 if (subscriber.getMerchant() != null) {
-                    params.put("subscriber[merchant_id]", "" + subscriber.getMerchant().getId());
+                    params.put("subscriber[merchant_id]", "" + subscriber.getMerchant().getServerId());
                 }
                 Log.d(TAG, "getParams: addSubscriberToServerSync " + params);
                 return params;

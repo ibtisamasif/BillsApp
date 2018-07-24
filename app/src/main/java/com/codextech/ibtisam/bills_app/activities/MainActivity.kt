@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        list = BPSubscriber.listAll(BPSubscriber::class.java)
+        list = BPSubscriber.getSubscribersInDescOrder();
 
         adapter = SubscriberRecyclerAdapter(list, this)
 

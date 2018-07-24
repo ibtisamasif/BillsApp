@@ -1,10 +1,14 @@
 package com.codextech.ibtisam.bills_app.models;
 
+import android.database.sqlite.SQLiteException;
+
 import com.orm.SugarRecord;
 import com.orm.dsl.Ignore;
+import com.orm.query.Select;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class BPSubscriber extends SugarRecord {
     @Ignore
@@ -24,6 +28,14 @@ public class BPSubscriber extends SugarRecord {
     private String duesDate;
 
     public BPSubscriber() {
+    }
+
+    public static List<BPSubscriber> getSubscribersInDescOrder() {
+        try {
+            return Select.from(BPSubscriber.class).orderBy("updated_at DESC").list();
+        } catch (SQLiteException e) {
+            return new ArrayList<BPSubscriber>();
+        }
     }
 
     public static BPSubscriber getSubscriberFromServerId(String server_id) {

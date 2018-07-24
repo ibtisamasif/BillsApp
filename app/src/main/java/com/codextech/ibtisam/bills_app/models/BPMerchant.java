@@ -1,9 +1,13 @@
 package com.codextech.ibtisam.bills_app.models;
 
+import android.database.sqlite.SQLiteException;
+
 import com.orm.SugarRecord;
+import com.orm.query.Select;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class BPMerchant extends SugarRecord {
 
@@ -16,6 +20,14 @@ public class BPMerchant extends SugarRecord {
     private String serverId;
 
     public BPMerchant() {
+    }
+
+    public static List<BPMerchant> getMerchantsInDescOrder() {
+        try {
+            return Select.from(BPMerchant.class).orderBy("updated_at DESC").list();
+        } catch (SQLiteException e) {
+            return new ArrayList<BPMerchant>();
+        }
     }
 
     public static BPMerchant getMerchantByName(String name) {

@@ -21,6 +21,7 @@ import com.codextech.ibtisam.bills_app.models.BPMerchant;
 import com.codextech.ibtisam.bills_app.models.BPTransac;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class TransactionsActivity extends AppCompatActivity {
@@ -52,7 +53,7 @@ public class TransactionsActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(TransactionsActivity.this));
 
-        list = BPTransac.listAll(BPTransac.class);
+        list = BPTransac.getTransactionsInDescOrder();
 
         adapter = new TransactionRecyclerAdapter(list, TransactionsActivity.this);
 
@@ -97,6 +98,7 @@ public class TransactionsActivity extends AppCompatActivity {
                     transaction.setTransacType(etTransactionType.getText().toString());
                     transaction.setTransacBeneficiary(etBeneficiary.getText().toString());
                     transaction.setTransacRemarks(etRemarks.getText().toString());
+                    transaction.setUpdatedAt(Calendar.getInstance().getTime());
                     if (transaction.save() > 0) {
                         Toast.makeText(TransactionsActivity.this, "Transaction saved", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();

@@ -26,7 +26,7 @@ public class MerchantsActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     MerchantRecyclerAdapter adapter;
-    FloatingActionButton add_fab;
+//    FloatingActionButton add_fab;
     List<BPMerchant> list = new ArrayList<>();
 
     @Override
@@ -36,14 +36,14 @@ public class MerchantsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Merchants");
 
-        add_fab = findViewById(R.id.add_fab);
-
-        add_fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addMerchant();
-            }
-        });
+//        add_fab = findViewById(R.id.add_fab);
+//
+//        add_fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                addMerchant();
+//            }
+//        });
 
         recyclerView = findViewById(R.id.recyclerView);
 
@@ -51,7 +51,7 @@ public class MerchantsActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(MerchantsActivity.this));
 
-        list = BPMerchant.listAll(BPMerchant.class);
+        list = BPMerchant.getMerchantsInDescOrder();
 
         adapter = new MerchantRecyclerAdapter(list, MerchantsActivity.this);
 
