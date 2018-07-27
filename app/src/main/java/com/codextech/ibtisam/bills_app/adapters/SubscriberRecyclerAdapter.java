@@ -70,36 +70,39 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
             if (subscriber.getDuesDate() != null) {
                 holder.tvDueDate.setText(subscriber.getDuesDate());
             }
-        }
-        holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(mContext, "Delete Subscriber dialog", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
-        if (subscriber.getDuesStatus() != null) {
-            if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_UNPAID)) {
-                holder.bPay.setText("PAY");
-                holder.bPay.setFocusable(true);
-            } else if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_PAID)) {
+
+            holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Toast.makeText(mContext, "Delete Subscriber dialog", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            });
+            if (subscriber.getDuesStatus() != null) {
+                if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_UNPAID)) {
+                    holder.bPay.setText("PAY");
+                    holder.bPay.setBackgroundColor(mContext.getResources().getColor(R.color.colorPrimary));
+                    holder.bPay.setFocusable(true);
+                } else if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_PAID)) {
+                    holder.bPay.setText("PAID");
+                    holder.bPay.setBackgroundColor(mContext.getResources().getColor(R.color.Color_Default));
+                    holder.bPay.setFocusable(false);
+                }
+            } else {
                 holder.bPay.setText("PAID");
                 holder.bPay.setBackgroundColor(mContext.getResources().getColor(R.color.Color_Default));
+                holder.bPay.setFocusable(false);
             }
-        } else {
-            holder.bPay.setText("PAID");
-            holder.bPay.setBackgroundColor(mContext.getResources().getColor(R.color.Color_Default));
+            holder.bPay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    subscriber.setBalance("0");
+                    subscriber.setDuesStatus("paid");
+                    subscriber.save();
+                    Toast.makeText(mContext, "Bill Paid successfully.", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
-
-        holder.bPay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                subscriber.setBalance("0");
-                subscriber.setDuesStatus("paid");
-                subscriber.save();
-                Toast.makeText(mContext, "Bill Paid successfully.", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override

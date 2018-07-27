@@ -135,6 +135,7 @@ public class InitService extends IntentService {
                                 tempMerchant.setUpdatedAt(Calendar.getInstance().getTime());
                                 tempMerchant.save();
                             } else {
+                                tempMerchant = new BPMerchant();
                                 tempMerchant.setName(merchant_name);
                                 tempMerchant.setAddress(merchant_adderss);
                                 tempMerchant.setLogo(merchant_logo);
