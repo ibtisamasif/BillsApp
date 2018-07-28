@@ -48,6 +48,12 @@
         <activity android:name=".activities.TransactionsActivity" />
         <activity android:name=".activities.SubscriberDetailActivity" />
 
+        <receiver android:name=".receivers.NetworkStateReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
         <service android:name=".service.InitService">
             <!-- android:process=":testing"> -->
         </service>

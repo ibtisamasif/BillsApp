@@ -1,6 +1,7 @@
 package com.codextech.ibtisam.bills_app.sync;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,6 +15,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.codextech.ibtisam.bills_app.SessionManager;
+import com.codextech.ibtisam.bills_app.events.BPSubscriberEventModel;
 import com.codextech.ibtisam.bills_app.models.BPSubscriber;
 import com.codextech.ibtisam.bills_app.utils.NetworkAccess;
 
@@ -23,6 +25,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.halfbit.tinybus.TinyBus;
 
 public class DataSenderAsync {
     public static final String TAG = "DataSenderAsync";
@@ -35,7 +39,6 @@ public class DataSenderAsync {
     private static boolean firstThreadIsRunning = false;
     private SessionManager sessionManager;
     private Context mContext;
-    private long totalSize = 0;
     private static RequestQueue queue;
     private final int MY_TIMEOUT_MS = 30000;
     private final int MY_MAX_RETRIES = 0;
@@ -66,9 +69,9 @@ public class DataSenderAsync {
         if (currentState == IDLE) {
             currentState = PENDING;
             Log.d(TAG, "run: InsideRUNING" + this.toString());
-            queue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<DataSenderAsync>() {
+            queue.setmAllFinishedListener(new RequestQueue.AllFinishedListener() {
                 @Override
-                public void onRequestFinished(Request request) {
+                public void onAllFinished() {
                     currentState = IDLE;
                     Log.d(TAG, "onRequestFinished: EVERYTHING COMPLETED");
                 }
@@ -91,6 +94,7 @@ public class DataSenderAsync {
                                 Log.d(TAG, "user_id : " + sessionManager.getKeyLoginId());
                                 Log.d(TAG, "Syncing");
                                 addSubscriberToServer();
+                                deleteSubscriberFromServer();
                             } else {
                                 Toast.makeText(mContext, ".", Toast.LENGTH_SHORT).show();
                             }
@@ -111,6 +115,7 @@ public class DataSenderAsync {
                 //this method is executed when doInBackground function finishes
                 @Override
                 protected void onPostExecute(Void result) {
+                    queue.isIdle();
                 }
             }.execute();
         } else {
@@ -150,6 +155,7 @@ public class DataSenderAsync {
                     Log.d(TAG, "onResponse: subscriber_balance : " + responseObject.getString("subscriber_balance"));
                     subscriber.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_SYNCED);
                     subscriber.save();
+                    TinyBus.from(mContext.getApplicationContext()).post(new BPSubscriberEventModel());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -157,6 +163,7 @@ public class DataSenderAsync {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                TinyBus.from(mContext.getApplicationContext()).post(new BPSubscriberEventModel());
                 Log.d(TAG, "onErrorResponse: CouldNotSyncAddSubscriber");
                 try {
                     if (error != null) {
@@ -171,6 +178,7 @@ public class DataSenderAsync {
 //                                    subscriber.setServerId(responseObject.getString("id"));
                                     subscriber.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_ADD_SYNCED);
                                     subscriber.save();
+                                    TinyBus.from(mContext.getApplicationContext()).post(new BPSubscriberEventModel());
                                 }
                             }
                         }
@@ -198,6 +206,82 @@ public class DataSenderAsync {
                     params.put("subscriber[merchant_id]", "" + subscriber.getMerchant().getServerId());
                 }
                 Log.d(TAG, "getParams: addSubscriberToServerSync " + params);
+                return params;
+            }
+        };
+        sr.setRetryPolicy(new DefaultRetryPolicy(
+                MY_TIMEOUT_MS,
+                MY_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(sr);
+    }
+
+    private void deleteSubscriberFromServer() {
+        List<BPSubscriber> subscriber = null;
+        if (BPSubscriber.count(BPSubscriber.class) > 0) {
+            subscriber = BPSubscriber.find(BPSubscriber.class, "sync_status = ? ", SyncStatus.SYNC_STATUS_SUBSCRIBER_DELETE_NOT_SYNCED);
+            Log.d(TAG, "deleteSubscriberFromServer: count : " + subscriber.size());
+            for (BPSubscriber oneSubscriber : subscriber) {
+                Log.d(TAG, "Found Organization : " + oneSubscriber.getNickname());
+                Log.d(TAG, "Server ID : " + oneSubscriber.getServerId());
+                deleteSubscriberFromServerSync(oneSubscriber);
+            }
+        }
+    }
+
+    private void deleteSubscriberFromServerSync(final BPSubscriber subscriber) {
+        currentState = PENDING;
+        Log.d(TAG, "deleteSubscriberFromServerSync: DELETE BPSubscriber SERVER ID : " + subscriber.getServerId());
+        final String BASE_URL = MyURLs.DELETE_SUBSCRIBERS;
+        Uri builtUri = Uri.parse(BASE_URL)
+                .buildUpon()
+                .appendPath("" + subscriber.getServerId())
+                .build();
+        final String myUrl = builtUri.toString();
+        StringRequest sr = new StringRequest(Request.Method.DELETE, myUrl, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "onResponse() called with: response (deleteSubscriber) = [" + response + "]");
+                try {
+                    JSONObject jObj = new JSONObject(response);
+                    int responseCode = jObj.getInt("responseCode");
+//                    Toast.makeText(getApplicationContext(), "response: "+response.toString(), Toast.LENGTH_LONG).show();
+
+//                    if (responseCode == 200) {
+//                        JSONObject responseObject = jObj.getJSONObject("response");
+                    subscriber.delete();
+                    TinyBus.from(mContext.getApplicationContext()).post(new BPSubscriberEventModel());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "onErrorResponse: CouldNotSyncDeleteSubscriber");
+                try {
+                    if (error != null) {
+                        if (error.networkResponse != null) {
+                            JSONObject jObj = new JSONObject(new String(error.networkResponse.data));
+                            int responseCode = jObj.getInt("responseCode");
+                            if (responseCode == 400) {
+                                Log.d(TAG, "onErrorResponse: responseCode == 400 deleted");
+                                subscriber.delete();
+                                TinyBus.from(mContext.getApplicationContext()).post(new BPSubscriberEventModel());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+//                params.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                params.put("Authorization", "Bearer " + sessionManager.getLoginToken());
+                Log.d(TAG, "getHeaders: getHeaders: " + params);
                 return params;
             }
         };

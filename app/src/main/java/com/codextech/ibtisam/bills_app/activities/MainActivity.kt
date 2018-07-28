@@ -43,8 +43,8 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     val TAG = "MainActivity"
-    internal lateinit var adapter: SubscriberRecyclerAdapter
-    internal var list: List<BPSubscriber> = ArrayList()
+    private lateinit var adapter: SubscriberRecyclerAdapter
+    private var list: List<BPSubscriber> = ArrayList()
     private var selectedMerchantName: String? = ""
     private var sessionManager: SessionManager? = null
 
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        list = BPSubscriber.getSubscribersInDescOrder();
+        list = BPSubscriber.getSubscribersInDescOrder()
 
         adapter = SubscriberRecyclerAdapter(list, this)
 
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStart() {
         super.onStart()
-        bus?.register(this)
+        bus!!.register(this)
     }
 
     override fun onResume() {
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStop() {
         Log.d(TAG, "onStop: ")
-        bus?.unregister(this)
+        bus!!.unregister(this)
         super.onStop()
     }
 
@@ -186,9 +186,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         }
-
-        val intentInitService = Intent(this, InitService::class.java)
-        startService(intentInitService)
     }
 
     override fun onBackPressed() {
@@ -211,9 +208,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.nav_item_refresh -> {
-                val intentInitService = Intent(this, InitService::class.java)
-                startService(intentInitService)
-                val dataSenderAsync = DataSenderAsync.getInstance(applicationContext)
+//                val intentInitService = Intent(this, InitService::class.java)
+//                startService(intentInitService)
+                val dataSenderAsync = DataSenderAsync.getInstance(this)
                 dataSenderAsync.run()
                 Toast.makeText(this,"Refreshed", Toast.LENGTH_SHORT).show()
                 return true
@@ -304,10 +301,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val etName = dialog.findViewById<EditText>(R.id.etName)
             val etReference = dialog.findViewById<EditText>(R.id.etReference)
             val bpMerchant = BPMerchant.getMerchantByName(selectedMerchantName)
-            if (etName.text.toString().isEmpty()) {
-                etName.error = "Please enter nick name!"
-            } else if (etReference.text.toString().isEmpty()) {
-                etReference.error = "Please enter Reference number!"
+            if (etName.text.toString().isEmpty() || etName.text.length < 3) {
+                etName.error = "Enter nick name having 3 characters minimum"
+            } else if (etReference.text.toString().isEmpty()|| etReference.text.length < 3) {
+                etReference.error = "Enter reference no having 3 characters minimum"
             } else {
                 if (bpMerchant != null) {
                     val biller = BPSubscriber()
@@ -319,7 +316,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (biller.save() > 0) {
                         Toast.makeText(this, "Biller saved", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
-                        list = BPSubscriber.listAll(BPSubscriber::class.java)
+                        list = BPSubscriber.getSubscribersInDescOrder()
                         adapter.updateList(list)
                         val dataSenderAsync = DataSenderAsync.getInstance(applicationContext)
                         dataSenderAsync.run()

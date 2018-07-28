@@ -168,7 +168,7 @@ public class SessionManager {
         }
     }
 
-    public void deleteAllUserData() {
+    private void deleteAllUserData() {
         Log.d(TAG, "Different Agent: deleting data...");
         if (BPMerchant.count(BPMerchant.class) > 0) {
             BPMerchant.deleteAll(BPMerchant.class);

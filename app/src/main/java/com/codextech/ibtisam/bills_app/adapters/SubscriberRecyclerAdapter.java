@@ -1,23 +1,33 @@
 package com.codextech.ibtisam.bills_app.adapters;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SyncStats;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codextech.ibtisam.bills_app.R;
 import com.codextech.ibtisam.bills_app.activities.SubscriberDetailActivity;
 import com.codextech.ibtisam.bills_app.models.BPSubscriber;
+import com.codextech.ibtisam.bills_app.sync.DataSenderAsync;
+import com.codextech.ibtisam.bills_app.sync.SyncStatus;
 
 import java.util.List;
+
+import de.halfbit.tinybus.TinyBus;
 
 public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRecyclerAdapter.OrganizationViewHolder> {
 
@@ -54,6 +64,41 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
                 mContext.startActivity(detailsActivityIntent);
             }
         });
+        holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String nameTextOnDialog;
+                if (subscriber.getNickname() != null) {
+                    nameTextOnDialog = subscriber.getNickname();
+                } else {
+                    nameTextOnDialog = subscriber.getReferenceno();
+                }
+                AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
+                alert.setTitle("Delete");
+                alert.setMessage("Are you sure to delete " + nameTextOnDialog + ". This will delete associated deals as well.");
+                alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        subscriber.setSyncStatus(SyncStatus.SYNC_STATUS_SUBSCRIBER_DELETE_NOT_SYNCED);
+                        subscriber.save();
+                        List<BPSubscriber> list = BPSubscriber.getSubscribersInDescOrder();
+                        if (list != null && list.size() > 0)
+                            updateList(list);
+//                        DataSenderAsync dataSenderAsync = DataSenderAsync.getInstance(mContext);
+//                        dataSenderAsync.run();
+                        Toast.makeText(mContext, "Deleted", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                alert.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                alert.show();
+                return true;
+            }
+        });
         if (subscriber != null) {
             if (subscriber.getNickname() != null) {
                 holder.tvName.setText(subscriber.getNickname());
@@ -70,14 +115,6 @@ public class SubscriberRecyclerAdapter extends RecyclerView.Adapter<SubscriberRe
             if (subscriber.getDuesDate() != null) {
                 holder.tvDueDate.setText(subscriber.getDuesDate());
             }
-
-            holder.cl.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    Toast.makeText(mContext, "Delete Subscriber dialog", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            });
             if (subscriber.getDuesStatus() != null) {
                 if (subscriber.getDuesStatus().equalsIgnoreCase(BPSubscriber.SUBSCRIBER_BILL_UNPAID)) {
                     holder.bPay.setText("PAY");

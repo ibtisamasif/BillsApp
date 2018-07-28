@@ -183,10 +183,7 @@ public class LogInActivity extends AppCompatActivity {
                         Log.d(TAG, "onResponse: user_image: " + user_image);
                         Log.d(TAG, "onResponse: user_wallet_balance: " + user_wallet_balance);
                         Log.d(TAG, "onResponse: iat: " + iat);
-
                         sessionManager.loginnUser(user_id, access_token, Calendar.getInstance().getTimeInMillis(), user_name, user_image, user_email, user_scope,user_wallet_balance);
-
-                        startActivity(new Intent(LogInActivity.this, MainActivity.class));
                         finish();
                     }
                 } catch (JSONException e) {

@@ -39,7 +39,7 @@ public class InitService extends IntentService {
     public static final String TAG = "InitService";
     private int result = Activity.RESULT_CANCELED;
     public static final String RESULT = "result";
-    public static final String NOTIFICATION = "com.example.ibtisam.myweatherapp";
+    public static final String NOTIFICATION = "com.codextech.ibtisam.bills_app";
 
     private Context mContext;
     private static RequestQueue queue;
